@@ -328,6 +328,9 @@ button {
   line-height: 1.35;
   color: #18352a;
 }
+.menu-description {
+  font-size: 11px;
+}
 
 .menu-card-bottom {
   margin-top: 15px;
@@ -511,10 +514,43 @@ button {
     min-height: auto;
     font-size: 14px;
   }
+  .menu-description {
+  margin-top: 6px;
+  color: #7a837d;
+  font-size: 12px;
+  line-height: 1.4;
+}
 
   .menu-card-bottom {
     margin-top: 10px;
   }
+  .empty-menu {
+  min-height: 300px;
+  background: #fffdf9;
+  border: 1px dashed #d8d1c4;
+  border-radius: 17px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-menu > div {
+  font-size: 35px;
+  margin-bottom: 10px;
+}
+
+.empty-menu h3 {
+  color: #204b38;
+  font-size: 18px;
+}
+
+.empty-menu p {
+  margin-top: 5px;
+  color: #7a837d;
+  font-size: 13px;
+}
 
   .mobile-nav {
     position: fixed;
