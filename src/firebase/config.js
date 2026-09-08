@@ -1,12 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager 
+} from "firebase/firestore";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAA3CrereY__pI3owAcJRvvEmmTmfmfPj0",
   authDomain: "chaa-bagaan-web.firebaseapp.com",
@@ -17,9 +18,17 @@ const firebaseConfig = {
   measurementId: "G-1192GRFCZB"
 };
 
-// Initialize Firebase
-
+// Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase Services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Fast Loading & Offline Caching-সহ Firestore ইনিশিয়ালাইজেশন
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
+
+export default app;

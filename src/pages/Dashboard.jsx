@@ -214,78 +214,15 @@
 
 // export default Dashboard;
 
+import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase/config";
+import { subscribeToMenuItems } from "../services/menuService";
 
-import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import MobileNav from "../components/MobileNav";
 import MenuCard from "../components/MenuCard";
 import MenuManagement from "./MenuManagement";
-
-const sampleItems = [
-  {
-    id: 1,
-    name: "CHAA BAGAAN Special Tea",
-    category: "Tea",
-    price: 100,
-    description: "Our signature special tea.",
-    image:
-      "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80",
-  },
-  {
-    id: 2,
-    name: "Regular Milk Tea",
-    category: "Tea",
-    price: 40,
-    description: "Classic milk tea.",
-    image:
-      "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=800&q=80",
-  },
-  {
-    id: 3,
-    name: "Lemon Tea",
-    category: "Tea",
-    price: 50,
-    description: "Refreshing lemon tea.",
-    image:
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80",
-  },
-  {
-    id: 4,
-    name: "Chicken Burger",
-    category: "Food",
-    price: 150,
-    description: "Juicy chicken burger.",
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
-  },
-  {
-    id: 5,
-    name: "French Fries",
-    category: "Snacks",
-    price: 100,
-    description: "Crispy golden fries.",
-    image:
-      "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&q=80",
-  },
-  {
-    id: 6,
-    name: "Chicken Nuggets",
-    category: "Snacks",
-    price: 120,
-    description: "Crispy chicken nuggets.",
-    image:
-      "https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=800&q=80",
-  },
-  {
-    id: 7,
-    name: "Cold Coffee",
-    category: "Drinks",
-    price: 120,
-    description: "Cold and creamy coffee.",
-    image:
-      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&q=80",
-  },
-];
 
 function Dashboard() {
   const [activePage, setActivePage] = useState("dashboard");
@@ -293,16 +230,13 @@ function Dashboard() {
   const renderPage = () => {
     switch (activePage) {
       case "menu":
-  return <MenuManagement />;
+        return <MenuManagement />;
       case "new-order":
         return (
-          
           <div className="coming-soon">
             <div className="coming-soon-icon">🛒</div>
             <h2>New Order</h2>
-            <p>
-              The new order system will be added in Section 4.
-            </p>
+            <p>The new order system will be added in Section 4.</p>
           </div>
         );
 
@@ -311,9 +245,7 @@ function Dashboard() {
           <div className="coming-soon">
             <div className="coming-soon-icon">📋</div>
             <h2>Order History</h2>
-            <p>
-              Order history will be added in Section 7.
-            </p>
+            <p>Order history will be added in Section 7.</p>
           </div>
         );
 
@@ -322,9 +254,7 @@ function Dashboard() {
           <div className="coming-soon">
             <div className="coming-soon-icon">📊</div>
             <h2>Reports</h2>
-            <p>
-              Sales and reports will be added in Section 8.
-            </p>
+            <p>Sales and reports will be added in Section 8.</p>
           </div>
         );
 
@@ -333,9 +263,7 @@ function Dashboard() {
           <div className="coming-soon">
             <div className="coming-soon-icon">⚙</div>
             <h2>Settings</h2>
-            <p>
-              Business settings will be added in Section 9.
-            </p>
+            <p>Business settings will be added in Section 9.</p>
           </div>
         );
 
@@ -346,79 +274,87 @@ function Dashboard() {
 
   return (
     <div className="app-layout">
-      <Sidebar
-        activePage={activePage}
-        setActivePage={setActivePage}
-      />
+      <Sidebar activePage={activePage} setActivePage={setActivePage} />
 
       <main className="main-content">
         <header className="top-header">
           <div>
-            <span className="welcome-text">
-              Welcome back
-            </span>
-
+            <span className="welcome-text">Welcome back</span>
             <h1>CHAA BAGAAN</h1>
           </div>
 
-          <button
-            className="profile-button"
-            type="button"
-          >
+          <button className="profile-button" type="button">
             👤
           </button>
         </header>
 
-        <section className="page-content">
-          {renderPage()}
-        </section>
+        <section className="page-content">{renderPage()}</section>
       </main>
 
-      <MobileNav
-        activePage={activePage}
-        setActivePage={setActivePage}
-      />
+      <MobileNav activePage={activePage} setActivePage={setActivePage} />
     </div>
   );
 }
 
 function MenuDashboard() {
-  const [selectedCategory, setSelectedCategory] =
-    useState("All");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = [
-    "All",
-    "Tea",
-    "Food",
-    "Snacks",
-    "Drinks",
-  ];
+  const categories = ["All", "Tea", "Food", "Snacks", "Drinks"];
+
+  // Firebase থেকে Real-time Live Data Fetching
+  useEffect(() => {
+    let unsubscribeMenu = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        unsubscribeMenu = subscribeToMenuItems(
+          currentUser.uid,
+          (menuItems) => {
+            setItems(menuItems);
+            setLoading(false);
+          },
+          (error) => {
+            console.error("Error fetching dashboard items:", error);
+            setLoading(false);
+          },
+        );
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeMenu) unsubscribeMenu();
+    };
+  }, []);
 
   const filteredItems =
     selectedCategory === "All"
-      ? sampleItems
-      : sampleItems.filter(
-          (item) =>
-            item.category === selectedCategory
-        );
+      ? items
+      : items.filter((item) => item.category === selectedCategory);
+
+  if (loading) {
+    return (
+      <div className="menu-dashboard-loading">
+        <p>Loading menu...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="menu-dashboard">
       <div className="menu-heading">
         <div>
-          <span className="section-label">
-            BUSINESS MENU
-          </span>
-
+          <span className="section-label">BUSINESS MENU</span>
           <h2>Menu</h2>
-
-          <p>
-            Select an item to start an order.
-          </p>
+          <p>Select an item to start an order.</p>
         </div>
 
         <div className="menu-count">
-          <strong>{sampleItems.length}</strong>
+          <strong>{items.length}</strong>
           <span>Items</span>
         </div>
       </div>
@@ -429,13 +365,9 @@ function MenuDashboard() {
             key={category}
             type="button"
             className={`category-button ${
-              selectedCategory === category
-                ? "active"
-                : ""
+              selectedCategory === category ? "active" : ""
             }`}
-            onClick={() =>
-              setSelectedCategory(category)
-            }
+            onClick={() => setSelectedCategory(category)}
           >
             {category}
           </button>
@@ -445,21 +377,14 @@ function MenuDashboard() {
       {filteredItems.length > 0 ? (
         <div className="menu-grid">
           {filteredItems.map((item) => (
-            <MenuCard
-              key={item.id}
-              item={item}
-            />
+            <MenuCard key={item.id} item={item} />
           ))}
         </div>
       ) : (
         <div className="empty-menu">
           <div>🍵</div>
-
           <h3>No menu items found</h3>
-
-          <p>
-            There are no items in this category.
-          </p>
+          <p>There are no items in this category.</p>
         </div>
       )}
     </div>

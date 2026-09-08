@@ -1,72 +1,55 @@
 import {
   collection,
+  query,
+  where,
+  onSnapshot,
   addDoc,
-  getDocs,
+  doc,
   updateDoc,
   deleteDoc,
-  doc,
   serverTimestamp,
 } from "firebase/firestore";
-
 import { db } from "../firebase/config";
 
-const getMenuCollection = (uid) => {
-  return collection(db, "businesses", uid, "menu");
-};
-
-export const getMenuItems = async (uid) => {
-  const snapshot = await getDocs(
-    getMenuCollection(uid)
+// Real-time listener function
+export const subscribeToMenuItems = (userId, callback, onError) => {
+  const q = query(
+    collection(db, "menu"),
+    where("userId", "==", userId)
   );
 
-  return snapshot.docs.map((item) => ({
-    id: item.id,
-    ...item.data(),
-  }));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(items);
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 };
 
-export const addMenuItem = async (uid, itemData) => {
-  const menuRef = getMenuCollection(uid);
-
-  const docRef = await addDoc(menuRef, {
+// Add new menu item
+export const addMenuItem = async (userId, itemData) => {
+  return await addDoc(collection(db, "menu"), {
     ...itemData,
+    userId,
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  return docRef.id;
-};
-
-export const updateMenuItem = async (
-  uid,
-  itemId,
-  itemData
-) => {
-  const itemRef = doc(
-    db,
-    "businesses",
-    uid,
-    "menu",
-    itemId
-  );
-
-  await updateDoc(itemRef, {
-    ...itemData,
-    updatedAt: serverTimestamp(),
   });
 };
 
-export const deleteMenuItem = async (
-  uid,
-  itemId
-) => {
-  const itemRef = doc(
-    db,
-    "businesses",
-    uid,
-    "menu",
-    itemId
-  );
+// Update existing menu item
+export const updateMenuItem = async (userId, itemId, itemData) => {
+  const itemRef = doc(db, "menu", itemId);
+  return await updateDoc(itemRef, itemData);
+};
 
-  await deleteDoc(itemRef);
+// Delete menu item
+export const deleteMenuItem = async (userId, itemId) => {
+  const itemRef = doc(db, "menu", itemId);
+  return await deleteDoc(itemRef);
 };

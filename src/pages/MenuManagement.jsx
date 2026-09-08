@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 
 import { auth } from "../firebase/config";
 
 import {
-  getMenuItems,
+  subscribeToMenuItems,
   addMenuItem,
   updateMenuItem,
   deleteMenuItem,
@@ -29,63 +29,36 @@ function MenuManagement() {
     available: true,
   });
 
-  // Auth Listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    let unsubscribeMenu = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+
+      if (currentUser) {
+        if (unsubscribeMenu) unsubscribeMenu();
+
+        unsubscribeMenu = subscribeToMenuItems(
+          currentUser.uid,
+          (menuItems) => {
+            setItems(menuItems);
+            setLoading(false);
+          },
+          (error) => {
+            console.error("Error loading menu:", error);
+            setLoading(false);
+          }
+        );
+      } else {
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeMenu) unsubscribeMenu();
+    };
   }, []);
-
-  // loadMenu-কে useCallback দিয়ে মেমোরাইজ করা হয়েছে যাতে কোনো Warning/Error না আসে
-  const loadMenu = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const menuItems = await getMenuItems(user.uid);
-      setItems(menuItems);
-    } catch (error) {
-      console.error("Error loading menu:", error);
-      alert("Menu load করতে সমস্যা হয়েছে।");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
- // user পরিবর্তন হলে menu ডাটা লোড হবে
-// ১. শুধু ইউজার আছে কি না চেক করার জন্য
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-    // যদি ইউজার একাউন্ট না থাকে, সাথে সাথে লোডিং বন্ধ হবে
-    if (!currentUser) {
-      setLoading(false);
-    }
-  });
-
-  return () => unsubscribe();
-}, []);
-
-// ২. ইউজার পাওয়ার পর ডাটা লোড করার জন্য
-useEffect(() => {
-  if (!user) return;
-
-  const loadMenu = async () => {
-    try {
-      setLoading(true);
-      const menuItems = await getMenuItems(user.uid);
-      setItems(menuItems);
-    } catch (error) {
-      console.error("Error loading menu:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadMenu();
-}, [user]);
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -146,7 +119,6 @@ useEffect(() => {
         await addMenuItem(user.uid, itemData);
       }
 
-      await loadMenu();
       resetForm();
     } catch (error) {
       console.error("Error saving menu item:", error);
@@ -178,10 +150,6 @@ useEffect(() => {
 
     try {
       await deleteMenuItem(user.uid, item.id);
-
-      setItems((previous) =>
-        previous.filter((menuItem) => menuItem.id !== item.id)
-      );
     } catch (error) {
       console.error("Error deleting item:", error);
       alert("Item delete করতে সমস্যা হয়েছে।");
@@ -193,14 +161,6 @@ useEffect(() => {
       await updateMenuItem(user.uid, item.id, {
         available: !item.available,
       });
-
-      setItems((previous) =>
-        previous.map((menuItem) =>
-          menuItem.id === item.id
-            ? { ...menuItem, available: !menuItem.available }
-            : menuItem
-        )
-      );
     } catch (error) {
       console.error("Error updating availability:", error);
       alert("Availability update করতে সমস্যা হয়েছে।");
