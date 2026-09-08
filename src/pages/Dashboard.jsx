@@ -98,43 +98,49 @@ function MenuDashboard() {
   ];
 
   const sampleItems = [
-    {
-      name: "CHAA BAGAAN Special Tea",
-      category: "Tea",
-      price: 100,
-      icon: "☕",
-    },
-    {
-      name: "Regular Milk Tea",
-      category: "Tea",
-      price: 40,
-      icon: "🍵",
-    },
-    {
-      name: "Chicken Burger",
-      category: "Food",
-      price: 150,
-      icon: "🍔",
-    },
-    {
-      name: "French Fries",
-      category: "Snacks",
-      price: 100,
-      icon: "🍟",
-    },
-    {
-      name: "Chicken Nuggets",
-      category: "Snacks",
-      price: 120,
-      icon: "🍗",
-    },
-    {
-      name: "Cold Coffee",
-      category: "Drinks",
-      price: 120,
-      icon: "🥤",
-    },
-  ];
+  {
+    name: "CHAA BAGAAN Special Tea",
+    category: "Tea",
+    price: 100,
+    image:
+      "https://images.unsplash.com/photo-1628095953831-797d5d81c2e6?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    name: "Regular Milk Tea",
+    category: "Tea",
+    price: 40,
+    image:
+      "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=800&q=80",
+  },
+  {
+    name: "Chicken Burger",
+    category: "Food",
+    price: 150,
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80",
+  },
+  {
+    name: "French Fries",
+    category: "Snacks",
+    price: 100,
+    image:
+      "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&q=80",
+  },
+  {
+    name: "Chicken Nuggets",
+    category: "Snacks",
+    price: 120,
+    image:
+      "https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=800&q=80",
+  },
+  {
+    name: "Cold Coffee",
+    category: "Drinks",
+    price: 120,
+    image:
+      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&q=80",
+  },
+];
 
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -178,8 +184,11 @@ function MenuDashboard() {
         {filteredItems.map((item) => (
           <div className="menu-card" key={item.name}>
             <div className="menu-card-image">
-              <span>{item.icon}</span>
-            </div>
+  <img
+    src={item.image}
+    alt={item.name}
+  />
+</div>
 
             <div className="menu-card-info">
               <span className="menu-category">
