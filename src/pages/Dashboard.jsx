@@ -219,6 +219,7 @@ import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import MobileNav from "../components/MobileNav";
 import MenuCard from "../components/MenuCard";
+import MenuManagement from "./MenuManagement";
 
 const sampleItems = [
   {
@@ -291,8 +292,11 @@ function Dashboard() {
 
   const renderPage = () => {
     switch (activePage) {
+      case "menu":
+  return <MenuManagement />;
       case "new-order":
         return (
+          
           <div className="coming-soon">
             <div className="coming-soon-icon">🛒</div>
             <h2>New Order</h2>

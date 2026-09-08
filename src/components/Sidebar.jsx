@@ -6,6 +6,11 @@ function Sidebar({ activePage, setActivePage }) {
       icon: "⌂",
     },
     {
+  id: "menu",
+  label: "Menu",
+  icon: "🍵",
+},
+    {
       id: "new-order",
       label: "New Order",
       icon: "🛒",

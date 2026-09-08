@@ -6,6 +6,11 @@ function MobileNav({ activePage, setActivePage }) {
       icon: "⌂",
     },
     {
+  id: "menu",
+  label: "Menu",
+  icon: "🍵",
+},
+    {
       id: "new-order",
       label: "Order",
       icon: "🛒",
